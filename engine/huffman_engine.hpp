@@ -8,12 +8,13 @@
 namespace huffman {
     class bit_set {
         static const size_t block_size = 8;
-        std::vector<uint8_t> blocks;
+        std::vector<unsigned char> blocks;
         size_t _size;
 
     public:
         bit_set();
         explicit bit_set(size_t size);
+        explicit bit_set(std::vector<char> &v);
 
         void resize(size_t new_size);
         void set(size_t pos, bool value);
@@ -57,6 +58,8 @@ namespace huffman {
         std::vector<uint64_t> frequencies;
         std::vector<char> input_buffer;
 
+        static uint64_t read_uint64_t(std::ifstream &input_file_stream);
+
         void calculate_chunk_frequencies(char *begin, const char *end);
         void calculate_file_frequecies(const std::string &input_file_path);
 
@@ -64,12 +67,15 @@ namespace huffman {
                 const std::vector<huffman::bit_set> &table);
         void read_chunk_from_file(std::ifstream &input_file_stream);
 
+        void cross_decode_file(std::ifstream &input_file_stream, const std::string &target_path);
+
         void write_version_to_file(std::ofstream &output_file_stream);
         void write_frequencies_to_file(std::ofstream &output_file_stream);
 
     public:
         explicit huffman_archiver(std::string source_file_path);
         void encode(const std::string &target_path);
+        void decode(const std::string &target_path);
     };
 }
 

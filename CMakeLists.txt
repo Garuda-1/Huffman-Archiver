@@ -8,8 +8,10 @@ set(ENGINE_FILES
         engine/huffman_engine.hpp
         engine/huffman_engine_tree.cpp
         engine/huffman_engine_bitset.cpp)
-set(UTILITY_FILES utility/main.cpp)
-set(UNIT_TESTING_FILES unit_testing.cpp)
+set(UTILITY_FILES
+        utility/main.cpp)
+set(UNIT_TESTING_FILES
+        unit_testing.cpp)
 
 add_library(huffman_archiver_engine STATIC ${ENGINE_FILES})
 add_executable(huffman_archiver ${UTILITY_FILES})

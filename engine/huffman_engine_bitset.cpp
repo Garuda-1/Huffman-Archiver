@@ -7,6 +7,13 @@ huffman::bit_set::bit_set(size_t size) : _size(size) {
     blocks.resize((size + block_size - 1) / block_size);
 }
 
+huffman::bit_set::bit_set(std::vector<char> &v) : _size(v.size() * block_size) {
+    blocks.reserve(v.size());
+    for (char byte : v) {
+        blocks.push_back(static_cast<unsigned char>(byte));
+    }
+}
+
 void huffman::bit_set::resize(size_t new_size) {
     blocks.resize((new_size + block_size - 1) / block_size);
     if (_size < new_size) {

@@ -3,6 +3,12 @@
 #include <bitset>
 #include "engine/huffman_engine.hpp"
 
+void print_freq_table(huffman::huffman_archiver &target) {
+    for (size_t i = 0; i < huffman::huffman_archiver::charcode_range; ++i) {
+        std::cout << i << '\t' << target.frequencies[i] << '\n';
+    }
+}
+
 void input_table_test() {
     huffman::huffman_archiver archiver("test.txt");
     archiver.encode("encode.bin");
@@ -71,6 +77,32 @@ void bit_set_flush_test() {
     }
 }
 
+void decode_test() {
+    huffman::huffman_archiver archiver("encode.bin");
+    archiver.decode("decode.txt");
+}
+
+void integrity_freq_test() {
+    huffman::huffman_archiver encoder("test.txt");
+    encoder.encode("encode.bin");
+    huffman::huffman_archiver decoder("encode.bin");
+    decoder.decode("decode.txt");
+    print_freq_table(encoder);
+    print_freq_table(decoder);
+    std::cout << "Tables are equal: " << (encoder.frequencies == decoder.frequencies) << std::endl;
+}
+
+void double_encode_test() {
+    huffman::huffman_archiver encoder_alpha("test.txt");
+    encoder_alpha.encode("encode_alpha.bin");
+    huffman::huffman_archiver encoder_bravo("encode_alpha.bin");
+    encoder_bravo.encode("encode_bravo.bin");
+    huffman::huffman_archiver decoder_bravo("encode_bravo.bin");
+    decoder_bravo.decode("decode_alpha.bin");
+    huffman::huffman_archiver decoder_alpha("decode_alpha.bin");
+    decoder_alpha.decode("result.txt");
+}
+
 int main(int argc, char** argv) {
     if (argc != 2) {
         std::cout << "Usage: huffman_unit_testing [--encode]" << std::endl;
@@ -85,5 +117,14 @@ int main(int argc, char** argv) {
     }
     if (section == "--bit_set_flush") {
         bit_set_flush_test();
+    }
+    if (section == "--decode") {
+        decode_test();
+    }
+    if (section == "--integrity_freq") {
+        integrity_freq_test();
+    }
+    if (section == "--double_encode") {
+        double_encode_test();
     }
 }
