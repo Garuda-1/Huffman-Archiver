@@ -1,5 +1,3 @@
-#include <utility>
-
 #include "huffman_engine.hpp"
 #include <iostream>
 #include <string>
@@ -32,7 +30,7 @@ void huffman::huffman_archiver::read_chunk_from_file(std::ifstream &input_file_s
 }
 
 huffman::huffman_archiver::huffman_archiver(std::string source_file_path)
-        : source_file_path(std::move(source_file_path)), version(1000000000000000000L) {
+        : source_file_path(std::move(source_file_path)), version(1) {
     frequencies.resize(charcode_range);
     input_buffer.resize(buffer_max_size);
 }
@@ -89,23 +87,8 @@ void huffman::huffman_archiver::write_frequencies_to_file(std::ofstream &output_
 
 void huffman::huffman_archiver::encode(const std::string &target_path) {
     calculate_file_frequecies(source_file_path);
-    for (size_t i = 0; i < charcode_range; ++i) {
-        std::cout << i << '\t' << frequencies[i] << '\n';
-    }
     tree t(frequencies);
-    for (huffman::tree::tree_node &v : t.order) {
-        std::string set;
-        for (unsigned char c : v.chars) {
-            set += static_cast<char>(c);
-        }
-        std::cout << "l=" << v.l_subtree << "; r=" << v.r_subtree << "; set=" << set << "; freq=" << v.freq << "\n";
-    }
     auto table = t.get_code_table();
-    for (unsigned char i = 0; i < std::numeric_limits<unsigned char>::max(); ++i) {
-        if (table[i].size() != 0) {
-            std::cout << static_cast<char>(i) << "=" << to_string(table[i]) << "\n";
-        }
-    }
     cross_encode_file(source_file_path, target_path, table);
 }
 

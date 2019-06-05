@@ -83,7 +83,7 @@ void decode_test() {
 }
 
 void integrity_freq_test() {
-    huffman::huffman_archiver encoder("test.txt");
+    huffman::huffman_archiver encoder("test.bin");
     encoder.encode("encode.bin");
     huffman::huffman_archiver decoder("encode.bin");
     decoder.decode("decode.txt");
