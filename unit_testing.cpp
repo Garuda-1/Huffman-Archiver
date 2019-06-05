@@ -83,10 +83,10 @@ void decode_test() {
 }
 
 void integrity_freq_test() {
-    huffman::huffman_archiver encoder("test.bin");
+    huffman::huffman_archiver encoder("pic_test.jpg");
     encoder.encode("encode.bin");
     huffman::huffman_archiver decoder("encode.bin");
-    decoder.decode("decode.txt");
+    decoder.decode("decode.jpg");
     print_freq_table(encoder);
     print_freq_table(decoder);
     std::cout << "Tables are equal: " << (encoder.frequencies == decoder.frequencies) << std::endl;
@@ -101,6 +101,13 @@ void double_encode_test() {
     decoder_bravo.decode("decode_alpha.bin");
     huffman::huffman_archiver decoder_alpha("decode_alpha.bin");
     decoder_alpha.decode("result.txt");
+}
+
+void singlebyte_test() {
+    huffman::huffman_archiver encoder("singlebyte_test.bin");
+    encoder.encode("singlebyte_encode.bin");
+    huffman::huffman_archiver decoder("singlebyte_encode.bin");
+    decoder.decode("singlebyte_decode.txt");
 }
 
 int main(int argc, char** argv) {
@@ -126,5 +133,8 @@ int main(int argc, char** argv) {
     }
     if (section == "--double_encode") {
         double_encode_test();
+    }
+    if (section == "--singlebyte") {
+        singlebyte_test();
     }
 }

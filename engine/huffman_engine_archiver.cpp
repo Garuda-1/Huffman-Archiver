@@ -11,6 +11,10 @@ uint64_t huffman::huffman_archiver::read_uint64_t(std::ifstream &input_file_stre
 
 void huffman::huffman_archiver::calculate_file_frequecies(const std::string &input_file_path) {
     std::ifstream input_file_stream(input_file_path);
+    if (!input_file_stream.is_open()) {
+        std::cout << "CALCULATE_FREQ: file opening failure!\n";
+        return;
+    }
     do {
         read_chunk_from_file(input_file_stream);
         calculate_chunk_frequencies(input_buffer.data(), input_buffer.data() + input_buffer.size());
@@ -87,6 +91,9 @@ void huffman::huffman_archiver::write_frequencies_to_file(std::ofstream &output_
 
 void huffman::huffman_archiver::encode(const std::string &target_path) {
     calculate_file_frequecies(source_file_path);
+    for (size_t i = 0; i < charcode_range; ++i) {
+        std::cout << i << '\t' << frequencies[i] << '\n';
+    }
     tree t(frequencies);
     auto table = t.get_code_table();
     cross_encode_file(source_file_path, target_path, table);
@@ -106,10 +113,12 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
         read_chunk_from_file(input_file_stream);
         huffman::bit_set input_bitwise_buffer(input_buffer);
         for (size_t i = 0; i < input_bitwise_buffer.size(); ++i) {
-            if (input_bitwise_buffer[i]) {
-                pos = t.order[pos].r_subtree;
-            } else {
-                pos = t.order[pos].l_subtree;
+            if (t.order.size() != 1) {
+                if (input_bitwise_buffer[i]) {
+                    pos = t.order[pos].r_subtree;
+                } else {
+                    pos = t.order[pos].l_subtree;
+                }
             }
             if (t.order[pos].chars.size() == 1) {
                 output_buffer.push_back(static_cast<char>(t.order[pos].chars[0]));
