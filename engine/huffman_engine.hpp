@@ -56,7 +56,6 @@ namespace huffman {
 
         std::string source_file_path;
         std::vector<uint64_t> frequencies;
-        std::vector<char> input_buffer;
 
         static uint64_t read_uint64_t(std::ifstream &input_file_stream);
 
@@ -65,7 +64,7 @@ namespace huffman {
 
         void cross_encode_file(const std::string &input_file_path, const std::string &output_file_path,
                 const std::vector<huffman::bit_set> &table);
-        void read_chunk_from_file(std::ifstream &input_file_stream);
+        static void read_chunk_from_file(std::ifstream &input_file_stream, std::vector<char> &input_buffer);
 
         void cross_decode_file(std::ifstream &input_file_stream, const std::string &target_path);
 
@@ -74,6 +73,7 @@ namespace huffman {
 
     public:
         explicit huffman_archiver(std::string source_file_path);
+        void change_source(const std::string &new_source_file_path);
         void encode(const std::string &target_path);
         void decode(const std::string &target_path);
     };

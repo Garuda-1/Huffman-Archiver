@@ -93,14 +93,14 @@ void integrity_freq_test() {
 }
 
 void double_encode_test() {
-    huffman::huffman_archiver encoder_alpha("test.txt");
-    encoder_alpha.encode("encode_alpha.bin");
-    huffman::huffman_archiver encoder_bravo("encode_alpha.bin");
-    encoder_bravo.encode("encode_bravo.bin");
-    huffman::huffman_archiver decoder_bravo("encode_bravo.bin");
-    decoder_bravo.decode("decode_alpha.bin");
-    huffman::huffman_archiver decoder_alpha("decode_alpha.bin");
-    decoder_alpha.decode("result.txt");
+    huffman::huffman_archiver arch("test.txt");
+    arch.encode("encode_alpha.bin");
+    arch.change_source("encode_alpha.bin");
+    arch.encode("encode_bravo.bin");
+    arch.change_source("encode_bravo.bin");
+    arch.decode("decode_alpha.bin");
+    arch.change_source("decode_alpha.bin");
+    arch.decode("result.txt");
 }
 
 void singlebyte_test() {
