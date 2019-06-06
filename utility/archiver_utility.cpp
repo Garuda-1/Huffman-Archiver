@@ -18,6 +18,8 @@ int main(int32_t argc, char** argv) {
     } else if (std::strcmp(argv[1], "--decode") == 0) {
         huffman::huffman_archiver engine(argv[2]);
         engine.decode(argv[3]);
+    } else if (std::strcmp(argv[2], "--help") == 0) {
+        std::cout << help;
     } else {
         std::cout << "Invalid command\n";
     }
