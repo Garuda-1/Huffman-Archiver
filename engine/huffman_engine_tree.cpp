@@ -58,7 +58,7 @@ std::vector<huffman::bit_set> huffman::tree::get_code_table() {
     std::vector<huffman::bit_set> table(std::numeric_limits<unsigned char>::max() + 1);
     if (order.size() == 1) {
         table[order[0].chars[0]].resize(1);
-    } else {
+    } else if (order.size() > 1) {
         bit_set initial;
         code_table_dfs(order.size() - 1, initial, table);
     }

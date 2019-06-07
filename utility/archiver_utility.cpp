@@ -14,10 +14,20 @@ int main(int32_t argc, char** argv) {
 
     if (std::strcmp(argv[1], "--encode") == 0) {
         huffman::huffman_archiver engine(argv[2]);
-        engine.encode(argv[3]);
+        try {
+            engine.encode(argv[3]);
+        } catch (std::runtime_error &e) {
+            std::cout << "Encoding error:\n\t" << e.what() << "\n";
+            return -1;
+        }
     } else if (std::strcmp(argv[1], "--decode") == 0) {
         huffman::huffman_archiver engine(argv[2]);
-        engine.decode(argv[3]);
+        try {
+            engine.decode(argv[3]);
+        } catch (std::runtime_error &e) {
+            std::cout << "Decoding error:\n\t" << e.what() << "\n";
+            return -1;
+        }
     } else if (std::strcmp(argv[2], "--help") == 0) {
         std::cout << help;
     } else {

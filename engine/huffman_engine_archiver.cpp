@@ -13,8 +13,7 @@ void huffman::huffman_archiver::calculate_file_frequecies(const std::string &inp
     std::ifstream input_file_stream(input_file_path);
     std::vector<char> input_buffer;
     if (!input_file_stream.is_open()) {
-        std::cerr << "CALCULATE_FREQ: file opening failure!\n";
-        return;
+        throw std::runtime_error("Source file opening failure");
     }
     do {
         read_chunk_from_file(input_file_stream, input_buffer);
@@ -47,14 +46,12 @@ void huffman::huffman_archiver::cross_encode_file(const std::string &input_file_
 
     std::ifstream input_file_stream(input_file_path, std::ios::in | std::ios::binary);
     if (!input_file_stream.is_open()) {
-        std::cerr << "CROSS_ENCODING: file opening failure!\n";
-        return;
+        throw std::runtime_error("Source file opening failure");
     }
     std::ofstream output_file_stream(output_file_path, std::ios::out | std::ios::binary);
     if (!output_file_stream.is_open()) {
-        std::cerr << "CROSS_ENCODING: file opening failure!\n";
         input_file_stream.close();
-        return;
+        throw std::runtime_error("Target file creation failure");
     }
 
     write_version_to_file(output_file_stream);
@@ -100,10 +97,14 @@ void huffman::huffman_archiver::encode(const std::string &target_path) {
 
 void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stream, const std::string &target_path) {
     tree t(frequencies);
-    size_t pos = t.order.size() - 1;
 
     std::ofstream output_file_stream(target_path, std::ios::out);
+    if (t.order.empty()) {
+        return;
+    }
+
     std::vector<char> output_buffer;
+    size_t pos = t.order.size() - 1;
 
     size_t decoded = 0;
     size_t total = t.order[pos].freq;
@@ -146,13 +147,11 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
 void huffman::huffman_archiver::decode(const std::string &target_path) {
     std::ifstream input_file_stream(source_file_path, std::ios::in | std::ios::binary);
     if (!input_file_stream.is_open()) {
-        std::cerr << "DECODING: file opening failure!\n";
-        return;
+        throw std::runtime_error("Source file opening failure");
     }
     uint64_t target_version = read_uint64_t(input_file_stream);
     if (target_version != version) {
-        std::cerr << "DECODING: invalid target version!\n";
-        return;
+        throw std::runtime_error("Source file version does not match archiver build version");
     }
     for (uint64_t & frequency : frequencies) {
         frequency = read_uint64_t(input_file_stream);
