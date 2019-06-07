@@ -138,6 +138,7 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
                 }
             }
             if (t.order[pos].chars.size() == 1) {
+                --frequencies[t.order[pos].chars[0]];
                 output_buffer.push_back(static_cast<char>(t.order[pos].chars[0]));
 
                 decoded++;
@@ -155,7 +156,14 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
         }
     } while (input_buffer.size() == buffer_max_size);
 
-    if (decoded != total) {
+    bool all_read = true;
+    for (auto frequency : frequencies) {
+        if (frequency != 0) {
+            all_read = false;
+            break;
+        }
+    }
+    if (!all_read || decoded != total) {
         input_file_stream.close();
         output_file_stream.close();
         throw std::runtime_error("Corrupted encoded file");
