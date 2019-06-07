@@ -5,7 +5,12 @@
 
 uint64_t huffman::huffman_archiver::read_uint64_t(std::ifstream &input_file_stream) {
     uint64_t res = 0;
-    input_file_stream.read((char*) (&res), sizeof(uint64_t) / sizeof(char));
+    size_t request_size = sizeof(uint64_t) / sizeof(char);
+    input_file_stream.read((char*) (&res), request_size);
+    if (input_file_stream.gcount() != request_size) {
+        input_file_stream.close();
+        throw std::runtime_error("Corrupted encoded file");
+    }
     return res;
 }
 
@@ -114,11 +119,22 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
         read_chunk_from_file(input_file_stream, input_buffer);
         huffman::bit_set input_bitwise_buffer(input_buffer);
         for (size_t i = 0; i < input_bitwise_buffer.size(); ++i) {
-            if (t.order.size() != 1) {
+            if (t.order.size() == 1) {
+                if (input_bitwise_buffer[i]) {
+                    input_file_stream.close();
+                    output_file_stream.close();
+                    throw std::runtime_error("Corrupted encoded file");
+                }
+            } else {
                 if (input_bitwise_buffer[i]) {
                     pos = t.order[pos].r_subtree;
                 } else {
                     pos = t.order[pos].l_subtree;
+                }
+                if (pos == std::numeric_limits<uint64_t>::max()) {
+                    input_file_stream.close();
+                    output_file_stream.close();
+                    throw std::runtime_error("Corrupted encoded file");
                 }
             }
             if (t.order[pos].chars.size() == 1) {
@@ -139,6 +155,12 @@ void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stre
         }
     } while (input_buffer.size() == buffer_max_size);
 
+    if (decoded != total) {
+        input_file_stream.close();
+        output_file_stream.close();
+        throw std::runtime_error("Corrupted encoded file");
+    }
+
     output_file_stream.write(output_buffer.data(), output_buffer.size());
 
     output_file_stream.close();
@@ -151,6 +173,7 @@ void huffman::huffman_archiver::decode(const std::string &target_path) {
     }
     uint64_t target_version = read_uint64_t(input_file_stream);
     if (target_version != version) {
+        input_file_stream.close();
         throw std::runtime_error("Source file version does not match archiver build version");
     }
     for (uint64_t & frequency : frequencies) {
