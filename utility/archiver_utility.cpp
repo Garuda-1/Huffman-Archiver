@@ -7,8 +7,13 @@ int main(int32_t argc, char** argv) {
                        "\t\t--encode\t\tencode a file\n"
                        "\t\t--decode\t\tdecode a file\n"
                        "\t\t--help\t\t\tshow this menu\n";
+
     if (argc != 4) {
-        std::cout << "Usage: huffman_archiver_app COMMAND SOURCE FILENAME\n" << help;
+        if (argc == 2 && std::strcmp(argv[1], "--help") == 0) {
+            std::cout << help;
+        } else {
+            std::cout << "Usage: archiver_utility COMMAND [SOURCE FILENAME]\n" << help;
+        }
         return 0;
     }
 
@@ -28,8 +33,6 @@ int main(int32_t argc, char** argv) {
             std::cout << "Decoding error:\n\t" << e.what() << "\n";
             return -1;
         }
-    } else if (std::strcmp(argv[2], "--help") == 0) {
-        std::cout << help;
     } else {
         std::cout << "Invalid command\n";
     }
