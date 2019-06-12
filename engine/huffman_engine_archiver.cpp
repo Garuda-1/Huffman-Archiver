@@ -32,8 +32,7 @@ void huffman::huffman_archiver::calculate_chunk_frequencies(char *begin, const c
     }
 }
 
-void
-huffman::huffman_archiver::read_chunk_from_file(std::ifstream &input_file_stream, std::vector<char> &input_buffer) {
+void huffman::huffman_archiver::read_chunk_from_file(std::ifstream &input_file_stream, std::vector<char> &input_buffer) {
     input_buffer.resize(buffer_max_size);
     input_file_stream.read(input_buffer.data(), buffer_max_size);
     input_buffer.resize(input_file_stream.gcount());
@@ -98,6 +97,7 @@ void huffman::huffman_archiver::encode(const std::string &target_path) {
     tree t(frequencies);
     auto table = t.get_code_table();
     cross_encode_file(source_file_path, target_path, table);
+    std::fill(frequencies.begin(), frequencies.end(), 0);
 }
 
 void huffman::huffman_archiver::cross_decode_file(std::ifstream &input_file_stream, const std::string &target_path) {
@@ -191,6 +191,7 @@ void huffman::huffman_archiver::decode(const std::string &target_path) {
     cross_decode_file(input_file_stream, target_path);
 
     input_file_stream.close();
+    std::fill(frequencies.begin(), frequencies.end(), 0);
 }
 
 void huffman::huffman_archiver::change_source(const std::string &new_source_file_path) {
