@@ -16,7 +16,7 @@ set(TESTING_FILES
         testing/gtest/gtest-all.cc
         testing/gtest/gtest.h
         testing/gtest/gtest_main.cc
-        testing/huffman_testing.cpp)
+        testing/huffman_testing.cpp testing/huffman_testing_aux.hpp testing/huffman_testing_aux.cpp)
 
 add_library(huffman_archiver_engine STATIC ${ENGINE_FILES})
 add_executable(archiver_utility ${UTILITY_FILES})

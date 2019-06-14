@@ -1,92 +1,18 @@
-//
-// Created by oktet on 12.06.19.
-//
+#include <chrono>
+#include "huffman_testing_aux.hpp"
 
-#include "gtest/gtest.h"
-#include "../engine/huffman_engine.hpp"
-
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <fstream>
-
-template<typename input_iterator_1, typename input_iterator_2>
-bool chunk_equal(input_iterator_1 begin_1, input_iterator_1 end_1,
-        input_iterator_2 begin_2, input_iterator_2 end_2) {
-    while (begin_1 != end_1 && begin_2 != end_2) {
-        if (*begin_1 != *begin_2) {
-            return false;
-        }
-        ++begin_1;
-        ++begin_2;
-    }
-    return (begin_1 == end_1 && begin_2 == end_2);
-}
-
-bool files_equal(const std::string &target_1, const std::string &target_2) {
-    std::ifstream in_1(target_1, std::ios::binary);
-    std::ifstream in_2(target_2, std::ios::binary);
-
-    if (!in_1.is_open() || !in_2.is_open()) {
-        throw std::runtime_error("Unable to open one of the files");
-    }
-
-    std::istreambuf_iterator<char> begin_1(in_1);
-    std::istreambuf_iterator<char> begin_2(in_2);
-
-    std::istreambuf_iterator<char> end;
-    return chunk_equal(begin_1, end, begin_2, end);
-}
-
-void encode_and_decode_switch(const std::string &prefix, const std::string &name) {
-    huffman::huffman_archiver engine(prefix + name + ".in");
-    engine.encode(prefix + name + ".bin");
-
-    engine.change_source(prefix + name + ".bin");
-    engine.decode(prefix + name + ".out");
-}
-
-void encode_and_decode_independent(const std::string &prefix, const std::string &name) {
-    huffman::huffman_archiver engine1(prefix + name + ".in");
-    engine1.encode(prefix + name + ".bin");
-
-    huffman::huffman_archiver engine2(prefix + name + ".bin");
-    engine2.decode(prefix + name + ".out");
-}
-
-void double_encode_and_decode_switch(const std::string &prefix, const std::string &name) {
-    huffman::huffman_archiver engine(prefix + name + ".in");
-    engine.encode(prefix + name + "_layer1.bin");
-
-    engine.change_source(prefix + name + "_layer1.bin");
-    engine.encode(prefix + name + "_layer2.bin");
-
-    engine.change_source(prefix + name + "_layer2.bin");
-    engine.decode(prefix + name + "_layer3.bin");
-
-    engine.change_source(prefix + name + "_layer3.bin");
-    engine.decode(prefix + name + "_layer4.out");
-}
-
-void double_encode_and_decode_independent(const std::string &prefix, const std::string &name) {
-    huffman::huffman_archiver engine1(prefix + name + ".in");
-    engine1.encode(prefix + name + "_layer1.bin");
-
-    huffman::huffman_archiver engine2(prefix + name + "_layer1.bin");
-    engine2.encode(prefix + name + "_layer2.bin");
-
-    huffman::huffman_archiver engine3(prefix + name + "_layer2.bin");
-    engine3.decode(prefix + name + "_layer3.bin");
-
-    huffman::huffman_archiver engine4(prefix + name + "_layer3.bin");
-    engine4.decode(prefix + name + "_layer4.out");
-}
+/*
+ * INTEGRITY TEST (SWITCH)
+ *
+ * Ensures that single engine perform encoding and decoding by switching target
+ */
 
 TEST(integrity_switch, empty) {
     std::string prefix = "../testing/tests/";
     std::string filename = "test_empty";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, small) {
@@ -94,6 +20,7 @@ TEST(integrity_switch, small) {
     std::string filename = "test_small";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, allbytes) {
@@ -101,6 +28,7 @@ TEST(integrity_switch, allbytes) {
     std::string filename = "test_allbytes";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, singlebyte_zero) {
@@ -108,6 +36,7 @@ TEST(integrity_switch, singlebyte_zero) {
     std::string filename = "test_singlebyte_zero";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, singlebyte_255) {
@@ -115,6 +44,7 @@ TEST(integrity_switch, singlebyte_255) {
     std::string filename = "test_singlebyte_255";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, big) {
@@ -122,6 +52,7 @@ TEST(integrity_switch, big) {
     std::string filename = "test_big";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_switch, music) {
@@ -129,14 +60,21 @@ TEST(integrity_switch, music) {
     std::string filename = "test_music";
     encode_and_decode_switch(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
+/*
+ * INTEGRITY TEST (INDEPENDENT)
+ *
+ * Ensures that file encoded by one engine can be decoded by another
+ */
 
 TEST(integrity_independent, empty) {
     std::string prefix = "../testing/tests/";
     std::string filename = "test_empty";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, small) {
@@ -144,6 +82,7 @@ TEST(integrity_independent, small) {
     std::string filename = "test_small";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, allbytes) {
@@ -151,6 +90,7 @@ TEST(integrity_independent, allbytes) {
     std::string filename = "test_allbytes";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, singlebyte_zero) {
@@ -158,6 +98,7 @@ TEST(integrity_independent, singlebyte_zero) {
     std::string filename = "test_singlebyte_zero";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, singlebyte_255) {
@@ -165,6 +106,7 @@ TEST(integrity_independent, singlebyte_255) {
     std::string filename = "test_singlebyte_255";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, big) {
@@ -172,6 +114,7 @@ TEST(integrity_independent, big) {
     std::string filename = "test_big";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
 TEST(integrity_independent, music) {
@@ -179,9 +122,14 @@ TEST(integrity_independent, music) {
     std::string filename = "test_music";
     encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
+    TEST_COUT << "Compression rate = " << compression_rate(prefix, filename) << '\n';
 }
 
-
+/*
+ * DOUBLE INTEGRITY TEST (SWITCH)
+ *
+ * Ensures that single constructor can perform double encoding composition
+ */
 
 TEST(double_integrity_switch, empty) {
     std::string prefix = "../testing/tests/";
@@ -228,11 +176,15 @@ TEST(double_integrity_switch, big) {
 TEST(double_integrity_switch, music) {
     std::string prefix = "../testing/tests/";
     std::string filename = "test_music";
-    encode_and_decode_independent(prefix, filename);
+    double_encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
 }
 
-
+/*
+ * DOUBLE INTEGRITY TEST (INDEPENDENT)
+ *
+ * Ensures that double encoding composition can be handled by 4 independent engines
+ */
 
 TEST(double_integrity_independent, empty) {
     std::string prefix = "../testing/tests/";
@@ -279,9 +231,279 @@ TEST(double_integrity_independent, big) {
 TEST(double_integrity_independent, music) {
     std::string prefix = "../testing/tests/";
     std::string filename = "test_music";
-    encode_and_decode_independent(prefix, filename);
+    double_encode_and_decode_independent(prefix, filename);
     EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + ".out"));
 }
+
+/*
+ * PERFORMANCE TEST (ENCODING)
+ *
+ * Calculates encoding speed and verifies
+ */
+
+TEST(encoding_perfomance, empty) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_empty";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, small) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_small";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, allbytes) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_allbytes";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, singlebyte_zero) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_singlebyte_zero";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, singlebyte_255) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_singlebyte_255";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, big) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_big";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(encoding_perfomance, music) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_music";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    auto start = std::chrono::system_clock::now();
+    engine.encode(prefix + filename + "_perf_encode.bin");
+    auto end = std::chrono::system_clock::now();
+
+    engine.change_source(prefix + filename + "_perf_encode.bin");
+    engine.decode(prefix + filename + "_perf_encode.out");
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + ".in"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+/*
+ * PERFORMANCE TEST (DECODING)
+ *
+ * Calculates decoding speed and verifies
+ */
+
+TEST(decoding_perfomance, empty) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_empty";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_decode.out"));
+}
+
+TEST(decoding_perfomance, small) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_small";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_pref_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_decode.out"));
+}
+
+TEST(decoding_perfomance, allbytes) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_allbytes";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_decode.out"));
+}
+
+TEST(decoding_perfomance, singlebyte_zero) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_singlebyte_zero";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_decode.out"));
+}
+
+TEST(decoding_perfomance, singlebyte_255) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_singlebyte_255";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_decode.out"));
+}
+
+TEST(decoding_perfomance, big) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_big";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+TEST(decoding_perfomance, music) {
+    std::string prefix = "../testing/tests/";
+    std::string filename = "test_music";
+    huffman::huffman_archiver engine(prefix + filename + ".in");
+
+    engine.encode(prefix + filename + "_perf_decode.bin");
+    engine.change_source(prefix + filename + "_perf_decode.bin");
+
+    auto start = std::chrono::system_clock::now();
+    engine.decode(prefix + filename + "_perf_decode.out");
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> duration(end - start);
+    double size = static_cast<double>(filesize(prefix + filename + "_perf_decode.bin"));
+    TEST_COUT << "Speed = " << size / duration.count() / 1024 / 1024 << " MB/S\n";
+    EXPECT_TRUE(files_equal(prefix + filename + ".in", prefix + filename + "_perf_encode.out"));
+}
+
+/*
+ * CORRUPTED INPUT TEST
+ *
+ * Ensures throwing runtime error in case of corrupted input
+ */
 
 TEST(corrupted_input, non_existing_source_encode) {
     huffman::huffman_archiver engine("test_non_exist.in");
