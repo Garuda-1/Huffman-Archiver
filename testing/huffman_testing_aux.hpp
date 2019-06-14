@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "../engine/huffman_engine.hpp"
+#include "../file_handler/archiver_lib_handler.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -57,9 +58,7 @@ bool chunk_equal(input_iterator_1 begin_1, input_iterator_1 end_1,
 bool files_equal(const std::string &target_1, const std::string &target_2);
 
 void encode_and_decode_switch(const std::string &prefix, const std::string &name);
-void encode_and_decode_independent(const std::string &prefix, const std::string &name);
 void double_encode_and_decode_switch(const std::string &prefix, const std::string &name);
-void double_encode_and_decode_independent(const std::string &prefix, const std::string &name);
 
 
 #endif

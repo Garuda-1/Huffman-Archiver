@@ -19,7 +19,7 @@ huffman::tree::tree_node::tree_node(size_t l, size_t r, std::vector<tree_node> &
     freq = order[l].freq + order[r].freq;
 }
 
-huffman::tree::tree(std::vector<uint64_t> frequencies) {
+void huffman::tree::build(std::vector<uint64_t> frequencies) {
     std::priority_queue<huffman::tree::tree_node> aux;
     bool pass = false;
     for (unsigned char i = 0; !pass || i != 0; i++, pass = true) {
@@ -40,6 +40,12 @@ huffman::tree::tree(std::vector<uint64_t> frequencies) {
         order.emplace_back(a.pos, b.pos, order, pos);
     }
 }
+
+void huffman::tree::clear() {
+    order.clear();
+}
+
+huffman::tree::tree() = default;
 
 void huffman::tree::code_table_dfs(size_t v, bit_set &cur, std::vector<huffman::bit_set> &ans) {
     if (order[v].chars.size() == 1) {

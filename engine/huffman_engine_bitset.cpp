@@ -42,7 +42,7 @@ void huffman::bit_set::pop_back() {
 }
 
 void huffman::bit_set::clear() {
-    blocks.clear();
+    blocks.resize(0);
     _size = 0;
 }
 

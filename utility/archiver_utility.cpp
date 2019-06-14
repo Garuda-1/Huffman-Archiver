@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
-#include "../engine/huffman_engine.hpp"
+#include "../file_handler/archiver_lib_handler.hpp"
+
 
 int main(int32_t argc, char** argv) {
     std::string help = "\tAvailable commands:\n"
@@ -18,20 +19,16 @@ int main(int32_t argc, char** argv) {
     }
 
     if (std::strcmp(argv[1], "--encode") == 0) {
-        huffman::huffman_archiver engine(argv[2]);
         try {
-            engine.encode(argv[3]);
+            encode(argv[2], argv[3]);
         } catch (std::runtime_error &e) {
-            std::cout << "Encoding error:\n\t" << e.what() << "\n";
-            return -1;
+            std::cout << "Encoding error: \n\t" << e.what() << '\n';
         }
     } else if (std::strcmp(argv[1], "--decode") == 0) {
-        huffman::huffman_archiver engine(argv[2]);
         try {
-            engine.decode(argv[3]);
+            decode(argv[2], argv[3]);
         } catch (std::runtime_error &e) {
-            std::cout << "Decoding error:\n\t" << e.what() << "\n";
-            return -1;
+            std::cout << "Decoding error: \n\t" << e.what() << '\n';
         }
     } else {
         std::cout << "Invalid command\n";
