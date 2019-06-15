@@ -43,7 +43,6 @@ namespace huffman {
         friend bool operator<(const tree::tree_node &a, const tree::tree_node &b);
         void code_table_dfs(size_t v, bit_set &cur, std::vector<bit_set> &ans);
 
-    public:
         tree();
 
         void clear();
@@ -61,7 +60,6 @@ namespace huffman {
         std::vector<char> output_buffer;
         size_t pos;
 
-    public:
         huffman_archiver();
 
         void calculate_chunk_frequencies(char *begin, const char *end);
