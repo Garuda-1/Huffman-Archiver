@@ -1,4 +1,5 @@
 #include "huffman_engine.hpp"
+#include <limits>
 #include <cstdint>
 #include <queue>
 
