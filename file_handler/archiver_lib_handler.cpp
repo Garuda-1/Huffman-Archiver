@@ -18,7 +18,7 @@ uint64_t read_uint64_t(std::ifstream &input_file_stream) {
     uint64_t res = 0;
     size_t request_size = sizeof(uint64_t) / sizeof(char);
     input_file_stream.read((char*) (&res), request_size);
-    if (input_file_stream.gcount() != request_size) {
+    if (static_cast<size_t>(input_file_stream.gcount()) != request_size) {
         input_file_stream.close();
         throw std::runtime_error("Corrupted encoded file");
     }
@@ -37,7 +37,7 @@ void encode(const std::string src, const std::string target) {
 
     do {
         read_chunk_from_file(input_file_stream_freq, input_buffer, buffer_size);
-        engine.calculate_chunk_frequencies(input_buffer.data(), input_buffer.end().base());
+        engine.calculate_chunk_frequencies(input_buffer.data(), input_buffer.data() + input_buffer.size());
     } while (input_buffer.size() == buffer_size);
 
     input_file_stream_freq.close();
@@ -60,7 +60,7 @@ void encode(const std::string src, const std::string target) {
 
     do {
         read_chunk_from_file(input_file_stream, input_buffer, buffer_size);
-        bool ready = engine.encode_chunk(input_buffer.data(), input_buffer.end().base(), buffer_size);
+        bool ready = engine.encode_chunk(input_buffer.data(), input_buffer.data() + input_buffer.size(), buffer_size);
         if (ready) {
             engine.flush(output_buffer);
             output_file_stream.write(output_buffer.data(), output_buffer.size());
@@ -109,7 +109,7 @@ void decode(const std::string src, const std::string target) {
 
     do {
         read_chunk_from_file(input_file_stream, input_buffer, buffer_size);
-        bool ready = engine.decode_chunk(input_buffer.data(), input_buffer.end().base(), buffer_size, total,
+        bool ready = engine.decode_chunk(input_buffer.data(), input_buffer.data() + input_buffer.size(), buffer_size, total,
                                          read);
         if (ready) {
             engine.flush(output_buffer);

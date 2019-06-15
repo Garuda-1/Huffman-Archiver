@@ -31,9 +31,9 @@ namespace huffman {
         struct tree_node {
             std::vector<unsigned char> chars;
             uint64_t freq;
-            size_t pos;
             size_t l_subtree;
             size_t r_subtree;
+            size_t pos;
 
             tree_node(unsigned char c, uint64_t freq, size_t pos);
             tree_node(size_t l, size_t r, std::vector<tree_node> &order, size_t pos);
